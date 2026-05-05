@@ -80,10 +80,11 @@ Works in **dev** and **prod** profiles. Use when UART mode is unavailable:
 
 | Component | Details |
 |-----------|---------|
-| Board | **WT32-ETH01** (ESP32 + LAN8720 Ethernet) |
+| Board | **WT32-ETH01** (ESP32 Ethernet MAC + LAN8720A PHY) |
 | Ethernet | 10/100 Mbps RJ45 |
-| Flash | 16 MB |
-| PSRAM | 8 MB |
+| Flash | 4 MB |
+| PSRAM | — (отсутствует) |
+| RAM | 520 KB SRAM (встроенная в ESP32) |
 | Framework | Arduino (ESP32 Arduino Core) |
 
 ---

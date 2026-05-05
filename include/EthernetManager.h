@@ -1,4 +1,7 @@
 // Network initialization wrapper (Ethernet)
+// WT32-ETH01: ESP32 built-in Ethernet MAC + LAN8720A PHY (RMII)
+// Flash: 4 MB QSPI, PSRAM: none
+// Partition table: 2×OTA (1.5 MB each) + SPIFFS (896 KB) + NVS
 #ifndef ETHERNET_MANAGER_H
 #define ETHERNET_MANAGER_H
 
