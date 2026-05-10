@@ -1,5 +1,4 @@
-#ifndef MBUS_GATEWAY_H
-#define MBUS_GATEWAY_H
+#pragma once
 
 #include <Arduino.h>
 #include <NetworkClient.h>
@@ -72,8 +71,8 @@ namespace MBusGateway {
   }
 
   static bool isAck(const std::vector<uint8_t>& response) {
-    for (size_t index = 0; index < response.size(); ++index) {
-      if (response[index] == 0xE5) {
+    for (uint8_t value : response) {
+      if (value == 0xE5) {
         return true;
       }
     }
@@ -196,11 +195,27 @@ namespace MBusGateway {
     return strtoull(buffer, nullptr, 16);
   }
 
+  static bool isSecondaryHexText(const String& secondaryAddress) {
+    for (size_t index = 0; index < secondaryAddress.length(); ++index) {
+      char ch = secondaryAddress[index];
+      bool isHex = (ch >= '0' && ch <= '9') ||
+                   (ch >= 'A' && ch <= 'F') ||
+                   (ch >= 'a' && ch <= 'f');
+      if (!isHex) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   static bool isSecondaryRangeValid(const String& startAddress, const String& endAddress) {
     if (startAddress.length() == 0 && endAddress.length() == 0) {
       return true;
     }
     if (startAddress.length() != 16 || endAddress.length() != 16) {
+      return false;
+    }
+    if (!isSecondaryHexText(startAddress) || !isSecondaryHexText(endAddress)) {
       return false;
     }
     return parseSecondaryNumber(startAddress) <= parseSecondaryNumber(endAddress);
@@ -985,7 +1000,12 @@ namespace MBusGateway {
     secondary.trim();
     secondary.toUpperCase();
 
-    if (primaryAddress < PRIMARY_MIN_ADDRESS && secondary.length() != 16) {
+    if (secondary.length() > 0 && (secondary.length() != 16 || !isSecondaryHexText(secondary))) {
+      result.error = "Secondary address must be a 16-character hexadecimal value.";
+      return result;
+    }
+
+    if (primaryAddress < PRIMARY_MIN_ADDRESS && secondary.length() == 0) {
       result.error = "A primary or 16-character secondary address is required.";
       return result;
     }
@@ -1019,6 +1039,12 @@ namespace MBusGateway {
     }
 
     result.device = parseDeviceInfo(response);
+    if (secondary.length() == 16 && result.device.secondaryAddress != secondary) {
+      result.error = result.device.secondaryAddress.length() > 0
+        ? String("M-Bus telegram secondary address mismatch: expected ") + secondary + String(", got ") + result.device.secondaryAddress + String(".")
+        : String("M-Bus telegram does not contain the requested secondary address.");
+      return result;
+    }
     if (primaryAddress >= PRIMARY_MIN_ADDRESS && primaryAddress <= PRIMARY_MAX_ADDRESS) {
       result.device.primaryAddress = primaryAddress;
     }
@@ -1061,5 +1087,3 @@ namespace MBusGateway {
   }
 
 }
-
-#endif

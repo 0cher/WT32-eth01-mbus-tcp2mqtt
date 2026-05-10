@@ -771,7 +771,7 @@ namespace MbusService {
 
       lock();
       status.active = false;
-      status.lastSuccess = true;
+      status.lastSuccess = !selectedDevices.empty() && updatedCount > 0;
       status.finishedAtMs = millis();
       status.updatedDevices = updatedCount;
       if (selectedDevices.empty()) {
@@ -789,8 +789,6 @@ namespace MbusService {
       }
 
       if (autoTriggeredRun) {
-        publishAutoRefreshTelemetry(telemetryDevices, telemetryLogs);
-
         // Append memory stats and uptime as a log entry
         {
           char memBuf[196];
@@ -807,7 +805,7 @@ namespace MbusService {
             total, free8, minFree8, largest8, uptimeHr, uptimeMin % 60UL);
           addTelemetryLog(telemetryLogs, "info", -1, "", "", String(memBuf));
         }
-        publishTelemetryLogs(telemetryLogs);
+        publishAutoRefreshTelemetry(telemetryDevices, telemetryLogs);
       } else {
         publishTelemetryLogs(telemetryLogs);
       }
